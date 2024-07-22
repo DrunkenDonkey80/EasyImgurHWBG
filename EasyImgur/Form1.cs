@@ -1,4 +1,5 @@
-﻿using Microsoft.Win32;
+﻿using EasyImgur.APIResponses;
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -151,7 +152,7 @@ namespace EasyImgur
                     if(Directory.Exists(path))
                     {
                         string[] fileTypes = new[] { ".jpg", ".jpeg", ".png", ".apng", ".bmp",
-                            ".gif", ".tiff", ".tif", ".xcf" };
+                            ".gif", ".tiff", ".tif", ".xcf" , ".webp" };
                         List<string> files = new List<string>();
                         foreach (string s in Directory.GetFiles(path))
                         {
@@ -275,6 +276,16 @@ namespace EasyImgur
             return _Image.GetThumbnailImage(new_width, new_height, null, System.IntPtr.Zero);
         }
 
+        private void ClipboardSetLink(string link)
+        {
+            link = Properties.Settings.Default.copyHttpsLinks
+                      ? link.Replace("http://", "https://")
+                      : link;
+            if (Properties.Settings.Default.copyIMGTag)
+                link = "[IMG]" + link + "[/IMG]";
+            Clipboard.SetText(link);
+        }
+
         private void UploadClipboard( bool _Anonymous )
         {
             APIResponses.ImageResponse resp = null;
@@ -313,9 +324,7 @@ namespace EasyImgur
                 // this doesn't need an invocation guard because this function can't be called from the context menu
                 if (Properties.Settings.Default.copyLinks)
                 {
-                    Clipboard.SetText(Properties.Settings.Default.copyHttpsLinks
-                        ? resp.ResponseData.Link.Replace("http://", "https://")
-                        : resp.ResponseData.Link);
+                    ClipboardSetLink(resp.ResponseData.Link);
                 }
 
                 ShowBalloonTip(2000, "Success!", Properties.Settings.Default.copyLinks ? "Link copied to clipboard" : "Upload placed in history: " + resp.ResponseData.Link, ToolTipIcon.None);
@@ -425,15 +434,11 @@ namespace EasyImgur
                 if (System.Threading.Thread.CurrentThread.GetApartmentState() != System.Threading.ApartmentState.STA)
                 {
                     this.Invoke(new Action(() =>
-                        Clipboard.SetText(Properties.Settings.Default.copyHttpsLinks
-                            ? album_response.ResponseData.Link.Replace("http://", "https://")
-                            : album_response.ResponseData.Link)));
+                    ClipboardSetLink(album_response.ResponseData.Link)));
                 }
                 else
                 {
-                    Clipboard.SetText(Properties.Settings.Default.copyHttpsLinks
-                        ? album_response.ResponseData.Link.Replace("http://", "https://")
-                        : album_response.ResponseData.Link);
+                    ClipboardSetLink(album_response.ResponseData.Link);
                 }
                 
                 ShowBalloonTip(2000, "Success!", Properties.Settings.Default.copyLinks ? "Link copied to clipboard" : "Upload placed in history: " + album_response.ResponseData.Link, ToolTipIcon.None);
@@ -512,15 +517,11 @@ namespace EasyImgur
                                     System.Threading.ApartmentState.STA)
                                 {
                                     this.Invoke(new Action(() =>
-                                        Clipboard.SetText(Properties.Settings.Default.copyHttpsLinks
-                                            ? resp.ResponseData.Link.Replace("http://", "https://")
-                                            : resp.ResponseData.Link)));
+                                        ClipboardSetLink(resp.ResponseData.Link)));
                                 }
                                 else
                                 {
-                                    Clipboard.SetText(Properties.Settings.Default.copyHttpsLinks
-                                        ? resp.ResponseData.Link.Replace("http://", "https://")
-                                        : resp.ResponseData.Link);
+                                    ClipboardSetLink(resp.ResponseData.Link);
                                 }
                             }
 
@@ -671,7 +672,7 @@ namespace EasyImgur
             // does affect where in the context menu they show up. Feel free to play with the placement and see
             // if you can get it to work better.
             string[] fileTypes = new[] { ".jpg", ".jpeg", ".png", ".apng", ".bmp",
-            ".gif", ".tiff", ".tif", ".pdf", ".xcf", "Directory" };
+            ".gif", ".tiff", ".tif", ".pdf", ".xcf", ".webp", "Directory" };
             using(RegistryKey root = Registry.CurrentUser.OpenSubKey("Software\\Classes", true))
             using(RegistryKey fileAssoc = root.CreateSubKey("SystemFileAssociations"))
                 foreach(string fileType in fileTypes)

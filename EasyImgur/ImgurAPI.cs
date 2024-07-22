@@ -136,6 +136,19 @@ namespace EasyImgur
                     _Image.Save(memStream, format);
                 }
 
+                //handle webp
+                var link = (_Obj as string);
+                if (link != null && link.Contains("webp"))
+                {
+                    string[] fileTypes = new[] { ".jpg", ".jpeg", ".png", ".apng", ".bmp", ".gif", ".tiff", ".tif", ".xcf"};
+                    var found = fileTypes.FirstOrDefault(type => link.Contains(type));
+                    if (found != null)
+                    {
+                        link = link.Replace("webp", found.Substring(1));
+                        _Obj = link;
+                    }
+                }
+
                 int status = 0;
                 string error = "An unknown error occurred.";
                 using (WebClient t = new WebClient())
